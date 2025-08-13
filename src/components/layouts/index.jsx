@@ -1,14 +1,18 @@
-import Header from './header'
-import Footer from './footer'
+import React, { useState } from "react";
+import Header from "./header";
+import Footer from "./footer";
 
-const Layout = (children) => {
+export default function Layout({ children }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
   return (
-    <div>
-        <Header />
-        {children}
-        <Footer />
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <main className="flex-1 p-4 bg-gray-50">{children}</main>
+      </div>
+      <Footer />
     </div>
-  )
+  );
 }
-
-export default Layout

@@ -1,9 +1,10 @@
-import React from 'react'
+import NavigationTabs from "../components/layouts/Navigation";
 
-const Home = () => {
+export default function Home() {
   return (
-    <div>Home</div>
-  )
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Home</h2>
+      <NavigationTabs />
+    </div>
+  );
 }
-
-export default Home
