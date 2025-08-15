@@ -85,19 +85,13 @@ export default function Header() {
           to="/"
           className="hover:text-green-200 transition-colors duration-200"
         >
-          Dashboard
+          Home
         </Link>
         <Link
-          to="/profile"
+          to="/master-data"
           className="hover:text-green-200 transition-colors duration-200"
         >
-          Profile
-        </Link>
-        <Link
-          to="/settings"
-          className="hover:text-green-200 transition-colors duration-200"
-        >
-          Settings
+          Master Data
         </Link>
       </nav>
 
