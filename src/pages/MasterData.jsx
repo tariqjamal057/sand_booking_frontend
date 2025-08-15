@@ -266,16 +266,18 @@ const MasterData = () => {
   return (
     <div className="min-h-[70vh] bg-green-50">
       <div className="mx-auto">
-        <h1 className="text-lg font-semibold text-green-800 mb-2">
-          Sand Booking Master Data
-        </h1>
-        <div className="flex mb-4">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition duration-200 text-sm"
-          >
-            Add New Booking
-          </button>
+        <div className="flex gap-2 items-center justify-between">
+          <h1 className="text-lg font-semibold text-green-800 mb-2">
+            Sand Booking Master Data
+          </h1>
+          <div className="flex mb-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition duration-200 text-sm cursor-pointer"
+            >
+              Add New Booking
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -294,7 +296,7 @@ const MasterData = () => {
           }}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* User Information Section */}
               <div className="bg-green-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-green-700 mb-4">
@@ -451,58 +453,121 @@ const MasterData = () => {
         </Modal>
 
         {/* Submitted Data */}
-        {submittedData.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-semibold text-green-700 mb-6">
-              Submitted Bookings ({submittedData.length})
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {submittedData.map((data, index) => (
-                <div
-                  key={data.id}
-                  className="bg-green-50 rounded-lg p-4 shadow-md"
-                >
-                  <h4 className="text-lg font-semibold text-green-700 mb-2">
-                    Booking #{index + 1}: {data.name}
-                  </h4>
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <p>
-                      <strong>Username:</strong> {data.username}
-                    </p>
-                    <p>
-                      <strong>District:</strong> {data.district}
-                    </p>
-                    <p>
-                      <strong>Stockyard:</strong> {data.stockyard}
-                    </p>
-                    <p>
-                      <strong>Vehicle:</strong> {data.vehicleNo}
-                    </p>
-                    <p>
-                      <strong>Delivery District:</strong>{" "}
-                      {data.deliveryDistrict}
-                    </p>
-                    <p>
-                      <strong>Delivery Mandal:</strong> {data.deliveryMandal}
-                    </p>
-                    <p>
-                      <strong>Delivery Village:</strong> {data.deliveryVillage}
-                    </p>
-                    <p>
-                      <strong>Payment:</strong> {data.paymentMode}
-                    </p>
-                    <p>
-                      <strong>Purpose:</strong> {data.sandPurpose}
-                    </p>
-                    <p>
-                      <strong>Slot:</strong> {data.deliverySlot}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-green-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Username
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    District
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Stockyard
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Vehicle No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Delivery District
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Delivery Mandal
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Delivery Village
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Payment Mode
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Purpose
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Slot
+                  </th>
+                </tr>
+              </thead>
+              {submittedData.length > 0 ? (
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {submittedData.map((data, index) => (
+                    <tr key={data.id} className="hover:bg-green-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {districts.find((d) => String(d.did) === data.district)
+                          ?.name || data.district}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.stockyard}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.vehicleNo}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {districts.find(
+                          (d) => String(d.did) === data.deliveryDistrict
+                        )?.name || data.deliveryDistrict}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {mandals.find(
+                          (m) => String(m.mid) === data.deliveryMandal
+                        )?.name || data.deliveryMandal}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {villages.find(
+                          (v) => String(v.vid) === data.deliveryVillage
+                        )?.name || data.deliveryVillage}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.paymentMode}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.sandPurpose === "1"
+                          ? "Domestic"
+                          : data.sandPurpose === "2"
+                          ? "Commercial"
+                          : data.sandPurpose === "3"
+                          ? "Govt.Civil Works"
+                          : data.sandPurpose}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.deliverySlot}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              ) : (
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td
+                      className="text-center px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                      colSpan={12}
+                    >
+                      No Data Found
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
