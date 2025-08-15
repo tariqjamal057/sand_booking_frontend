@@ -65,7 +65,7 @@ export default function Header() {
   );
 
   return (
-    <header className="bg-green-600 text-white shadow-lg p-4 flex justify-between items-center relative md:gap-8 gap-3">
+    <header className="bg-green-600 text-white shadow-lg p-4 flex justify-between items-center relative md:gap-8 gap-3 w-full">
       {/* Mobile menu button and main title */}
       <div className="flex items-center">
         <button
@@ -86,6 +86,12 @@ export default function Header() {
           className="hover:text-green-200 transition-colors duration-200"
         >
           Home
+        </Link>
+        <Link
+          to="/users"
+          className="hover:text-green-200 transition-colors duration-200"
+        >
+          Manage User Credentials
         </Link>
         <Link
           to="/master-data"
@@ -129,6 +135,12 @@ export default function Header() {
             className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
           >
             Home
+          </Link>
+          <Link
+            to="/users"
+            className="hover:text-green-200 transition-colors duration-200"
+          >
+            Manage User Credentials
           </Link>
           <Link
             to="/master-data"
