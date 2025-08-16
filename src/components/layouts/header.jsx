@@ -138,7 +138,7 @@ export default function Header() {
           </Link>
           <Link
             to="/users"
-            className="hover:text-green-200 transition-colors duration-200"
+            className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
           >
             Manage User Credentials
           </Link>

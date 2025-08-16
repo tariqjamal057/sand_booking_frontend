@@ -25,14 +25,11 @@ const UserData = () => {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     reset,
     setValue,
   } = useForm({
     resolver: zodResolver(userSchema),
   });
-
-  const password = watch("password");
 
   const fetchUsers = async () => {
     try {
@@ -56,35 +53,44 @@ const UserData = () => {
     setLoading(true);
     try {
       const userData = {
-        ...data,
-        id: isEditMode ? editingUser.id : Date.now(),
-        createdAt: isEditMode
-          ? editingUser.createdAt
-          : new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        username: data.username,
+        password: data.password,
       };
 
-      delete userData.confirmPassword;
-
+      let response;
       if (isEditMode) {
-        setUsers(
-          users.map((user) => (user.id === editingUser.id ? userData : user))
-        );
-        setAlertMessage("User updated successfully!");
+        response = await fetch(`${API_BASE_URL}/users/${editingUser.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        });
       } else {
-        setUsers([...users, userData]);
-        setAlertMessage("User created successfully!");
+        response = await fetch(`${API_BASE_URL}/users`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        });
       }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to save user");
+      }
+
+      await fetchUsers(); // Refresh the list
 
       reset();
       setIsModalOpen(false);
       setIsEditMode(false);
       setEditingUser(null);
     } catch (error) {
-      setAlertMessage(`Error: ${error.message}`);
+      console.log(`Error: ${error.message}`);
     } finally {
       setLoading(false);
-      setIsAlertModalOpen(true);
     }
   };
 
@@ -94,20 +100,7 @@ const UserData = () => {
     setIsModalOpen(true);
 
     setValue("username", user.username);
-    setValue("name", user.name);
-    setValue("email", user.email);
-    setValue("phone", user.phone);
-    setValue("role", user.role);
-    setValue("password", "");
-    setValue("confirmPassword", "");
-  };
-
-  const handleDelete = (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((user) => user.id !== userId));
-      setAlertMessage("User deleted successfully!");
-      setIsAlertModalOpen(true);
-    }
+    setValue("password", user.password);
   };
 
   const Modal = ({ isOpen, onClose, children }) => {
@@ -235,15 +228,9 @@ const UserData = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleEdit(user)}
-                          className="text-green-600 hover:text-green-900 mr-3"
+                          className="text-green-600 hover:text-green-900 mr-3 cursor-pointer"
                         >
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
                         </button>
                       </td>
                     </tr>
@@ -275,13 +262,13 @@ const UserData = () => {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 cursor-pointer"
                 disabled={loading}
               >
                 {loading ? "Saving..." : isEditMode ? "Update" : "Create"}

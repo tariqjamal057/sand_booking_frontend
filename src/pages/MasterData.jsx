@@ -8,16 +8,15 @@ const API_BASE_URL = "https://31.97.232.231/booking";
 
 const bookingSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-  district: z.string().min(1, "District is required"),
+  booking_user: z.int().min(1, "User Credential is required"),
+  district: z.int().min(1, "District is required"),
   stockyard: z.string().min(1, "Stockyard is required"),
   customerGstin: z.string().optional(),
   sandPurpose: z.string().min(1, "Purpose of Sand is required"),
   vehicleNo: z.string().min(1, "Vehicle No is required"),
-  deliveryDistrict: z.string().min(1, "Delivery District is required"),
-  deliveryMandal: z.string().min(1, "Delivery Mandal is required"),
-  deliveryVillage: z.string().min(1, "Delivery Village is required"),
+  deliveryDistrict: z.int().min(1, "Delivery District is required"),
+  deliveryMandal: z.int().min(1, "Delivery Mandal is required"),
+  deliveryVillage: z.int().min(1, "Delivery Village is required"),
   deliverySlot: z.string().min(1, "Delivery Slot is required"),
   paymentMode: z.string().min(1, "Payment Mode is required"),
 });
@@ -30,6 +29,11 @@ const MasterData = () => {
   const [deliverySlots, setDeliverySlots] = useState([]);
   const [selectedDistrictStockyard, setSelectedDistrictStockyard] =
     useState(null);
+  const [bookingUsers, setBookingUsers] = useState([]);
+  const [masterDataList, setMasterDataList] = useState([]);
+  const [viewData, setViewData] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,8 +66,6 @@ const MasterData = () => {
       return data;
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setAlertMessage(`Failed to load data: ${err.message}`);
-      setIsAlertModalOpen(true);
       return [];
     } finally {
       setLoading(false);
@@ -93,12 +95,28 @@ const MasterData = () => {
     setDeliverySlots(slots);
   };
 
+  const fetchMasterData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/master-data`);
+      if (!response.ok) throw new Error("Failed to fetch master data");
+      const data = await response.json();
+      setMasterDataList(data || []);
+    } catch (err) {
+      console.error("Error fetching master data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchInitialData = async () => {
       const fetchedDistricts = await fetchData(`${API_BASE_URL}/districts`);
       if (fetchedDistricts && fetchedDistricts.length > 0) {
         setDistricts(fetchedDistricts);
       }
+      setBookingUsers(await fetchData(`${API_BASE_URL}/users`));
+      setMasterDataList(await fetchData(`${API_BASE_URL}/master-data`));
     };
     fetchInitialData();
     generateDeliverySlots();
@@ -161,22 +179,37 @@ const MasterData = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // Here, you would make the actual POST request to the booking endpoint
-      // const response = await fetch(`${API_BASE_URL}/book-now`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data)
-      // });
-      // if (!response.ok) {
-      //   throw new Error('Submission failed');
-      // }
-      // const result = await response.json();
+      const bookingData = {
+        name: data.name,
+        booking_user: parseInt(data.booking_user),
+        district: parseInt(data.district),
+        stockyard: data.stockyard,
+        gstin: data.customerGstin || null,
+        sand_purpose: data.sandPurpose,
+        vehicle_no: data.vehicleNo,
+        delivery_district: parseInt(data.deliveryDistrict),
+        delivery_mandal: parseInt(data.deliveryMandal),
+        delivery_village: parseInt(data.deliveryVillage),
+        delivery_slot: data.deliverySlot,
+        payment_mode: data.paymentMode,
+      };
 
-      // Simulate successful submission for demonstration
-      setSubmittedData([...submittedData, { ...data, id: Date.now() }]);
-      setAlertMessage("Booking submitted successfully!");
-      setIsAlertModalOpen(true);
-      reset(); // Reset form fields
+      const url = editingId
+        ? `${API_BASE_URL}/master-data/${editingId}`
+        : `${API_BASE_URL}/master-data`;
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData),
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || "Save failed");
+
+      fetchMasterData();
+      reset();
+      setEditingId(null);
+      setIsModalOpen(false);
     } catch (error) {
       setAlertMessage(`Submission failed: ${error.message}`);
       setIsAlertModalOpen(true);
@@ -186,7 +219,31 @@ const MasterData = () => {
     }
   };
 
-  // Watch for stockyard selection and log details
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    reset({
+      name: item.name,
+      booking_user: item.booking_user.id,
+      district: item.district.did,
+      stockyard: item.stockyard.name,
+      customerGstin: item.gstin,
+      sandPurpose: item.sand_purpose,
+      vehicleNo: item.vehicle_no,
+      deliveryDistrict: item.delivery_district.did,
+      deliveryMandal: item.delivery_mandal.mid,
+      deliveryVillage: item.delivery_village.vid,
+      deliverySlot: item.delivery_slot,
+      paymentMode: item.payment_mode,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleView = async (id) => {
+    const data = await fetchData(`${API_BASE_URL}/master-data/${id}`);
+    setViewData(data);
+    setIsViewModalOpen(true);
+  };
+
   const selectedStockyard = watch("stockyard");
   useEffect(() => {
     if (selectedStockyard) {
@@ -207,7 +264,7 @@ const MasterData = () => {
         <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
           <div className="sticky top-0 bg-white px-6  border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-green-700">
-              {isAlertModalOpen ? "Attention" : "Add New Booking"}
+              {isAlertModalOpen ? "Attention" : "Add New Booking" }
             </h2>
             <button
               onClick={onClose}
@@ -220,6 +277,21 @@ const MasterData = () => {
         </div>
       </div>,
       document.body
+    );
+  };
+
+  const renderDetailField = ({ label, value }) => {
+    return (
+      <>
+        <label className="block text-sm font-medium text-gray-700">
+          {label}
+        </label>
+        <input
+          className="mt-1 block w-full rounded-md border border-green-200 bg-white px-3 py-2 focus:border-green-500 focus:ring-green-500 outline-none sm:text-sm transition duration-300"
+          disabled={true}
+          value={value}
+        />
+      </>
     );
   };
 
@@ -254,7 +326,6 @@ const MasterData = () => {
           {...register(name)}
           className="mt-1 block w-full rounded-md border border-green-200 bg-white px-3 py-2 focus:border-green-500 focus:ring-green-500 outline-none sm:text-sm transition duration-300"
           disabled={disabled || loading}
-          autoComplete="additional-name"
         />
       )}
       {errors[name] && (
@@ -304,12 +375,16 @@ const MasterData = () => {
                 </h3>
                 <div className="space-y-4">
                   <InputField label="Name" name="name" />
-                  <InputField label="Username" name="username" />
                   <InputField
-                    label="Password"
-                    name="password"
-                    type="password"
+                    label="User Credential"
+                    name="booking_user"
+                    type="select"
+                    options={bookingUsers.map((u) => ({
+                      label: u.username,
+                      value: u.id,
+                    }))}
                   />
+                  <InputField label="GSTIN" name="customerGstin" />
                 </div>
               </div>
 
@@ -359,8 +434,6 @@ const MasterData = () => {
                       { value: "3", label: "Govt.Civil Works" },
                     ]}
                   />
-                  <InputField label="GSTIN" name="customerGstin" />
-                  <InputField label="Vehicle No" name="vehicleNo" />
                 </div>
               </div>
 
@@ -408,6 +481,7 @@ const MasterData = () => {
                   Delivery & Payments
                 </h3>
                 <div className="space-y-4">
+                  <InputField label="Vehicle No" name="vehicleNo" />
                   <InputField
                     label="Delivery Slot"
                     name="deliverySlot"
@@ -435,7 +509,9 @@ const MasterData = () => {
             <div className="mt-6 flex justify-end">
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+                className={`bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ${
+                  loading ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
                 disabled={loading}
               >
                 {loading ? "Submitting..." : "Submit Booking"}
@@ -474,10 +550,10 @@ const MasterData = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Stockyard
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Vehicle No
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                  </th> */}
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Delivery District
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
@@ -485,21 +561,24 @@ const MasterData = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Delivery Village
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                  </th> */}
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Payment Mode
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                  </th> */}
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Purpose
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                  </th> */}
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     Slot
+                  </th> */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>
-              {submittedData.length > 0 ? (
+              {masterDataList.length > 0 ? (
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {submittedData.map((data, index) => (
+                  {masterDataList.map((data, index) => (
                     <tr key={data.id} className="hover:bg-green-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {index + 1}
@@ -508,16 +587,15 @@ const MasterData = () => {
                         {data.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {data.username}
+                        {data.booking_user?.username}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {districts.find((d) => String(d.did) === data.district)
-                          ?.name || data.district}
+                        {data.district?.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {data.stockyard}
+                        {data.stockyard?.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {data.vehicleNo}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -534,11 +612,11 @@ const MasterData = () => {
                         {villages.find(
                           (v) => String(v.vid) === data.deliveryVillage
                         )?.name || data.deliveryVillage}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {data.paymentMode}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      </td> */}
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.payment_mode}
+                      </td> */}
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {data.sandPurpose === "1"
                           ? "Domestic"
                           : data.sandPurpose === "2"
@@ -546,9 +624,23 @@ const MasterData = () => {
                           : data.sandPurpose === "3"
                           ? "Govt.Civil Works"
                           : data.sandPurpose}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {data.deliverySlot}
+                      </td> */}
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {data.delivery_slot}
+                      </td> */}
+                      <td className="px-6 py-4 space-x-2">
+                        <button
+                          onClick={() => handleEdit(data)}
+                          className="text-blue-600 cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleView(data.id)}
+                          className="text-green-600 cursor-pointer"
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -569,6 +661,100 @@ const MasterData = () => {
           </div>
         </div>
       </div>
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)}>
+        {viewData ? (
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg">{viewData.name} Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-4">
+                  User Information
+                </h3>
+                <div className="space-y-4">
+                  {renderDetailField({
+                    label: "Name",
+                    value: viewData.name,
+                  })}
+                  {renderDetailField({
+                    label: "User Credential",
+                    value: viewData.booking_user?.username,
+                  })}
+                  {renderDetailField({
+                    label: "GSTIN",
+                    value: viewData.gstin,
+                  })}
+                </div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-4">
+                  Booking Details
+                </h3>
+                <div className="space-y-4">
+                  {renderDetailField({
+                    label: "District",
+                    value: viewData.district?.name,
+                  })}
+                  {renderDetailField({
+                    label: "Stockyard",
+                    value: viewData.stockyard?.name,
+                  })}
+                  {renderDetailField({
+                    label: "Purpose of sand",
+                    value:
+                      viewData.sand_purpose === "1"
+                        ? "Domestic"
+                        : viewData.sand_purpose === "2"
+                        ? "Commercial"
+                        : viewData.sand_purpose === "3"
+                        ? "Govt.Civil Works"
+                        : viewData.sand_purpose,
+                  })}
+                </div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-4">
+                  Delivery Location Details
+                </h3>
+                <div className="space-y-4">
+                  {renderDetailField({
+                    label: "Delivery District",
+                    value: viewData.delivery_district?.name,
+                  })}
+                  {renderDetailField({
+                    label: "Delivery Mandal",
+                    value: viewData.delivery_mandal?.name,
+                  })}
+                  {renderDetailField({
+                    label: "Delivery Village",
+                    value: viewData.delivery_village?.name,
+                  })}
+                </div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-4">
+                  Delivery & Payments
+                </h3>
+                <div className="space-y-4">
+                  {renderDetailField({
+                    label: "Vehicle No",
+                    value: viewData.vehicle_no,
+                  })}
+                  {renderDetailField({
+                    label: "Delivery Slot",
+                    value: viewData.delivery_slot,
+                  })}
+                  {renderDetailField({
+                    label: "Payment Mode",
+                    value: viewData.payment_mode,
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p>Loading...</p>
+        )}
+      </Modal>
     </div>
   );
 };
