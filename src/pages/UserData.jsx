@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const API_BASE_URL = "https://31.97.232.231/booking";
+const API_BASE_URL = "https://bhaktabhim.duckdns.org/booking";
 
 const userSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
