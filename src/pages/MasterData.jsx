@@ -4,19 +4,19 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const API_BASE_URL = "https://bhaktabhim.duckdns.org/booking";
+const API_BASE_URL = "http://127.0.0.1:8000/booking";
 
 const bookingSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  booking_user: z.int().min(1, "User Credential is required"),
-  district: z.int().min(1, "District is required"),
-  stockyard: z.string().min(1, "Stockyard is required"),
+  booking_user: z.any(),
+  district: z.any(),
+  stockyard: z.string().optional(),
   customerGstin: z.string().optional(),
   sandPurpose: z.string().min(1, "Purpose of Sand is required"),
   vehicleNo: z.string().min(1, "Vehicle No is required"),
-  deliveryDistrict: z.int().min(1, "Delivery District is required"),
-  deliveryMandal: z.int().min(1, "Delivery Mandal is required"),
-  deliveryVillage: z.int().min(1, "Delivery Village is required"),
+  deliveryDistrict: z.any(),
+  deliveryMandal: z.any(),
+  deliveryVillage: z.any(),
   deliverySlot: z.string().min(1, "Delivery Slot is required"),
   paymentMode: z.string().min(1, "Payment Mode is required"),
 });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
-const API_BASE_URL = "https://bhaktabhim.duckdns.org/booking";
+const API_BASE_URL = "http://127.0.0.1:8000/booking";
 
 export default function Home() {
   const [masterDataList, setMasterDataList] = useState([]);
@@ -35,7 +35,6 @@ export default function Home() {
   const startBooking = async (bookingMasterId) => {
     if (!bookingMasterId) return;
 
-    setIsModalOpen(false);
     setIsRunning(true);
     setBookingStatus(null);
 
@@ -67,6 +66,7 @@ export default function Home() {
       setBookingStatus({ status: "failed", message: error.message });
     } finally {
       setIsRunning(false);
+      setIsModalOpen(false);
     }
   };
 
