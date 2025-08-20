@@ -26,6 +26,9 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "builder/index.html"));
   }
 
+  // open dev tools
+  // mainWindow.webContents.openDevTools();
+
   return mainWindow;
 }
 
