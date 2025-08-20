@@ -1,0 +1,23 @@
+{
+  "name": "sand_booking",
+  "version": "1.0.0",
+  "description": "Sand Booking Desktop Application",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "win": {}
+  },
+  "devDependencies": {
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "electron-is-dev": "^3.0.1"
+  }
+}
