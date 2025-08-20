@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -88,42 +90,49 @@ export default function Header() {
           Home
         </Link>
         <Link
-          to="/users"
-          className="hover:text-green-200 transition-colors duration-200"
-        >
-          Manage User Credentials
-        </Link>
-        <Link
           to="/master-data"
           className="hover:text-green-200 transition-colors duration-200"
         >
           Master Data
         </Link>
+        <Link
+          to="/users"
+          className="hover:text-green-200 transition-colors duration-200"
+        >
+          Manage User Credentials
+        </Link>
       </nav>
 
       <div className="relative">
-        <button
-          onClick={toggleUserDropdown}
-          className="flex items-center p-2 rounded-full hover:bg-green-700 transition-colors duration-200"
-        >
-          {userIcon}
-          <span className="ml-2 hidden md:block font-medium">John Doe</span>
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 mt-2 bg-white text-gray-800 border rounded-md shadow-lg w-48 z-20">
-            <button className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors duration-200 rounded-t-md">
-              Profile
-            </button>
-            <button className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors duration-200">
-              Settings
-            </button>
-            <Link
-              to="/login"
-              className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors duration-200 rounded-b-md"
+        {user ? (
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={toggleUserDropdown}
+              className="flex items-center p-2 rounded-full hover:bg-green-700 transition-colors duration-200"
             >
-              Logout
-            </Link>
+              {userIcon}
+              <span className="ml-2 hidden md:block font-medium">
+                {user.username}
+              </span>
+            </button>
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 bg-white text-gray-800 border rounded-md shadow-lg w-48 z-20 cursor-pointer">
+                <button
+                  onClick={logout}
+                  className="block w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors duration-200 rounded-b-md"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
+        ) : (
+          <Link
+            to="/login"
+            className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer"
+          >
+            Login
+          </Link>
         )}
       </div>
 
@@ -137,23 +146,32 @@ export default function Header() {
             Home
           </Link>
           <Link
-            to="/users"
-            className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
-          >
-            Manage User Credentials
-          </Link>
-          <Link
             to="/master-data"
             className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
           >
             Master Data
           </Link>
           <Link
-            to="/login"
+            to="/users"
             className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
           >
-            Login
+            Manage User Credentials
           </Link>
+          {user ? (
+            <button
+              onClick={logout}
+              className="block w-full text-left px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="block px-4 py-3 text-white hover:bg-green-800 transition-colors duration-200"
+            >
+              Login
+            </Link>
+          )}
         </nav>
       )}
     </header>
